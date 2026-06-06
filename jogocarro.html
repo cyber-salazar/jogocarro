@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Desvie da Burocracia! — A Região de Americana Merece Mais</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f4f4f0;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1rem 0;
+  }
+
+  #game-wrapper {
+    width: 100%;
+    max-width: 400px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  #title-screen, #game-over-screen, #lead-screen, #thanks-screen, #challenge-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 1rem;
+  }
+
+  #game-area { display: none; }
+
+  #game-canvas {
+    display: block;
+    width: 100%;
+    touch-action: none;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+  }
+
+  .screen-card {
+    background: #fff;
+    border: 1px solid #e5e5e0;
+    border-radius: 16px;
+    padding: 1.75rem 1.5rem;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .btn-primary {
+    background: #e24b4a;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity .15s, transform .1s;
+    display: block;
+  }
+  .btn-primary:hover { opacity: .88; }
+  .btn-primary:active { transform: scale(.98); }
+
+  .btn-secondary {
+    background: transparent;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 11px 24px;
+    font-size: 15px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: .6rem;
+    transition: background .15s;
+  }
+  .btn-secondary:hover { background: #f4f4f0; }
+
+  .btn-share {
+    background: #222;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity .15s;
+    display: block;
+  }
+  .btn-share:hover { opacity: .85; }
+
+  .tag {
+    display: inline-block;
+    background: #faeeda;
+    color: #633806;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 99px;
+    margin-bottom: .5rem;
+  }
+
+  .screen-card h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: .4rem;
+  }
+  .screen-card h2 {
+    font-size: 19px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: .4rem;
+  }
+  .screen-card p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .score-big {
+    font-size: 52px;
+    font-weight: 800;
+    color: #111;
+    line-height: 1;
+  }
+  .score-label {
+    font-size: 13px;
+    color: #888;
+  }
+
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .5rem .5rem .3rem;
+    font-size: 13px;
+    color: #555;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e0;
+  }
+  .hud strong { color: #111; }
+
+  .ctrl-hint {
+    text-align: center;
+    font-size: 12px;
+    color: #aaa;
+    padding: .4rem 0 .2rem;
+    background: #fff;
+  }
+
+  label {
+    font-size: 13px;
+    color: #555;
+    display: block;
+    margin-bottom: 4px;
+    margin-top: .75rem;
+  }
+  label:first-of-type { margin-top: 0; }
+
+  input[type=text], input[type=tel] {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 15px;
+    background: #fafaf8;
+    color: #111;
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+  }
+  input[type=text]:focus, input[type=tel]:focus {
+    border-color: #e24b4a;
+    box-shadow: 0 0 0 3px rgba(226,75,74,.12);
+  }
+
+  .error-msg {
+    color: #e24b4a;
+    font-size: 12px;
+    min-height: 18px;
+    margin-top: .3rem;
+  }
+
+  .fine-print {
+    font-size: 11px;
+    color: #bbb;
+    text-align: center;
+    margin-top: .75rem;
+    line-height: 1.5;
+  }
+
+  .result-box {
+    background: #f4f4f0;
+    border-radius: 10px;
+    padding: .85rem 1rem;
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 1.25rem;
+    text-align: center;
+  }
+  .result-box strong { color: #111; }
+  .result-box .tier { color: #e24b4a; font-weight: 700; margin-top: .25rem; display: block; }
+
+  .how-to {
+    display: flex;
+    gap: .5rem;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .how-item {
+    background: #f4f4f0;
+    border-radius: 8px;
+    padding: .5rem .75rem;
+    font-size: 12px;
+    color: #555;
+    text-align: center;
+  }
+  .how-item span { display: block; font-size: 20px; margin-bottom: 2px; }
+
+  .tier-badge {
+    display: inline-block;
+    background: #fff3cd;
+    color: #7d5204;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+
+  .challenge-highlight {
+    font-size: 28px;
+    font-weight: 800;
+    color: #e24b4a;
+    margin: .25rem 0;
+  }
+</style>
+</head>
+<body>
+
+<div id="game-wrapper">
+
+  <!-- CHALLENGE SCREEN (when arriving via shared link) -->
+  <div id="challenge-screen" style="display:none">
+    <div class="screen-card" style="text-align:center">
+      <div class="tag">A Região de Americana Merece Mais</div>
+      <div style="font-size:44px;margin:.5rem 0">🏆</div>
+      <h2>Você foi desafiado!</h2>
+      <p style="margin-bottom:.5rem">Alguém fez</p>
+      <div class="challenge-highlight" id="challenge-score">0m</div>
+      <div class="tier-badge" id="challenge-tier">Apoiador Bronze 🥉</div>
+      <p>Consegue superar esse recorde?</p>
+      <button class="btn-primary" id="btn-challenge-play">Aceitar desafio 🚀</button>
+    </div>
+  </div>
+
+  <!-- TITLE SCREEN -->
+  <div id="title-screen">
+    <div class="screen-card" style="text-align:center">
+      <div class="tag">A Região de Americana Merece Mais</div>
+      <div style="font-size:52px;margin:.5rem 0">🚗</div>
+      <h1>Desvie da Burocracia!</h1>
+      <p>Quanto mais longe você for, maior seu apoio ao movimento cívico da região de Americana.</p>
+      <div class="how-to">
+        <div class="how-item"><span>⛔</span>Desvie dos<br>obstáculos</div>
+        <div class="how-item"><span>⭐</span>Colete<br>power-ups</div>
+        <div class="how-item"><span>📲</span>Registre<br>seu recorde</div>
+      </div>
+      <button class="btn-primary" id="btn-start">Jogar agora</button>
+      <p style="font-size:12px;color:#bbb;margin:.75rem 0 0;line-height:1.4">← → no teclado &nbsp;·&nbsp; toque nos lados na tela &nbsp;·&nbsp; ou swipe</p>
+    </div>
+  </div>
+
+  <!-- GAME AREA -->
+  <div id="game-area">
+    <canvas id="game-canvas" width="400" height="580"></canvas>
+    <div class="ctrl-hint">toque esquerdo/direito para mover · swipe · ou ← →</div>
+  </div>
+
+  <!-- GAME OVER SCREEN -->
+  <div id="game-over-screen" style="display:none">
+    <div class="screen-card" style="text-align:center">
+      <div style="font-size:40px;margin-bottom:.5rem">💥</div>
+      <h2>Fim de jogo!</h2>
+      <div class="score-label" style="margin-bottom:.25rem">Você percorreu</div>
+      <div class="score-big" id="final-score">0</div>
+      <div class="score-label" style="margin-bottom:.5rem">metros desviando da burocracia</div>
+      <div class="tier-badge" id="over-tier">Apoiador Bronze 🥉</div>
+      <button class="btn-primary" id="btn-lead">Resgatar meu resultado 🏆</button>
+      <button class="btn-secondary" id="btn-retry">Tentar de novo</button>
+    </div>
+  </div>
+
+  <!-- LEAD CAPTURE SCREEN -->
+  <div id="lead-screen" style="display:none">
+    <div class="screen-card">
+      <div class="tag">Quase lá!</div>
+      <h2 style="margin-bottom:.25rem">Cadastre-se para salvar seu resultado</h2>
+      <p>Informe seus dados para registrar seu recorde e receber novidades do movimento.</p>
+      <label for="input-name">Nome</label>
+      <input type="text" id="input-name" placeholder="Seu primeiro nome" maxlength="40" autocomplete="given-name">
+      <label for="input-phone">WhatsApp</label>
+      <input type="tel" id="input-phone" placeholder="(19) 99999-9999" maxlength="15" autocomplete="tel">
+      <label for="input-bairro">Bairro e Município</label>
+      <input type="text" id="input-bairro" placeholder="Informe seu bairro e município" maxlength="80" autocomplete="address-level3">
+      <div class="error-msg" id="form-error"></div>
+      <button class="btn-primary" id="btn-submit" style="margin-top:.75rem">Salvar meu recorde 📲</button>
+      <p class="fine-print">Ao cadastrar, você concorda em receber mensagens do movimento pelo WhatsApp.<br>Responda SAIR a qualquer momento para parar.</p>
+    </div>
+  </div>
+
+  <!-- THANKS SCREEN (with score + share) -->
+  <div id="thanks-screen" style="display:none">
+    <div class="screen-card" style="text-align:center">
+      <div style="font-size:44px;margin-bottom:.5rem">🤝</div>
+      <h2>Recorde registrado!</h2>
+      <div class="result-box">
+        Resultado: <strong id="thanks-score">0</strong>m
+        <span class="tier" id="thanks-tier"></span>
+      </div>
+      <p>Desafie seus amigos a superarem seu recorde!</p>
+      <button class="btn-share" id="btn-share">Compartilhar desafio 🔗</button>
+      <button class="btn-secondary" id="btn-play-again">Jogar de novo</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  AMERICANA MERECE MAIS — JOGO DE CAPTAÇÃO DE LEADS v5
+// ════════════════════════════════════════════════════════════
+
+const CONFIG = {
+  webhookUrl: null,
+  // Base URL for share links — update when deployed
+  get baseUrl() {
+    return window.location.href.split('?')[0];
+  },
+};
+
+const $ = id => document.getElementById(id);
+
+// ── Check for challenge link on load ────────────────────────
+(function checkChallenge() {
+  const params = new URLSearchParams(window.location.search);
+  const cs = params.get('s'); // score
+  if (cs) {
+    const score = parseInt(cs, 10) || 0;
+    const tier = getTier(score);
+    $('challenge-score').textContent = score + 'm';
+    $('challenge-tier').textContent = tier.label;
+    showScreen('challenge-screen');
+  }
+})();
+
+function showScreen(id) {
+  const screens = {
+    'challenge-screen': 'flex',
+    'title-screen':     'flex',
+    'game-area':        'block',
+    'game-over-screen': 'flex',
+    'lead-screen':      'flex',
+    'thanks-screen':    'flex',
+  };
+  Object.keys(screens).forEach(s => {
+    $(s).style.display = s === id ? screens[s] : 'none';
+  });
+}
+
+function getTier(score) {
+  if (score >= 800) return { label: 'Apoiador Diamante 💎' };
+  if (score >= 400) return { label: 'Apoiador Ouro 🥇' };
+  if (score >= 150) return { label: 'Apoiador Prata 🥈' };
+  return               { label: 'Apoiador Bronze 🥉' };
+}
+
+// ── Audio — procedural sounds ───────────────────────────────
+let audioCtx = null;
+
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playSound(type) {
+  try {
+    ensureAudio();
+    const now = audioCtx.currentTime;
+
+    if (type === 'star') {
+      [660, 880].forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.18, now + i * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.15);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now + i * 0.08);
+        osc.stop(now + i * 0.08 + 0.15);
+      });
+    } else if (type === 'shield') {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(400, now);
+      osc.frequency.exponentialRampToValueAtTime(1200, now + 0.25);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.3);
+    } else if (type === 'slow') {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(200, now + 0.2);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } else if (type === 'hit') {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.2);
+      const bufSize = audioCtx.sampleRate * 0.08;
+      const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * 0.3;
+      const noise = audioCtx.createBufferSource();
+      const ng = audioCtx.createGain();
+      noise.buffer = buf;
+      ng.gain.setValueAtTime(0.15, now);
+      ng.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      noise.connect(ng).connect(audioCtx.destination);
+      noise.start(now);
+    } else if (type === 'gameover') {
+      [440, 370, 311, 220].forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.15, now + i * 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.18 + 0.25);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now + i * 0.18);
+        osc.stop(now + i * 0.18 + 0.25);
+      });
+    } else if (type === 'levelup') {
+      [523, 659, 784].forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.13, now + i * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.18);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now + i * 0.1);
+        osc.stop(now + i * 0.1 + 0.18);
+      });
+    }
+  } catch (e) {}
+}
+
+// ── Canvas / Constants ──────────────────────────────────────
+const canvas = $('game-canvas');
+const ctx    = canvas.getContext('2d');
+const W = canvas.width;
+const H = canvas.height;
+
+const LANE_W = W / 3;
+const LANES  = [LANE_W * 0.5, LANE_W * 1.5, LANE_W * 2.5];
+
+const OBSTACLES = ['🏛️','📜','🏷️','🚧','⛔','📋','🔒','📑','🏗️'];
+const POWERUPS  = ['⭐','🛡️','💨'];
+
+// ── Game state ──────────────────────────────────────────────
+let state, animId, lastScore = 0;
+
+function initState() {
+  return {
+    score:      0,
+    lives:      3,
+    level:      1,
+    speed:      3.4,
+    car: {
+      x:          LANES[1],
+      y:          H - 110,
+      targetLane: 1,
+      invincible: 0,
+      shield:     false,
+    },
+    obstacles:    [],
+    particles:    [],
+    floatingTexts:[],
+    frameCount:   0,
+    spawnRate:    78,
+    running:      true,
+  };
+}
+
+function spawnObstacle() {
+  const lane    = Math.floor(Math.random() * 3);
+  const isPower = Math.random() < 0.13;
+  const list    = isPower ? POWERUPS : OBSTACLES;
+  state.obstacles.push({
+    lane,
+    x:     LANES[lane],
+    y:     -70,
+    emoji: list[Math.floor(Math.random() * list.length)],
+    power: isPower,
+    hit:   false,
+  });
+}
+
+function addParticles(x, y, color) {
+  for (let i = 0; i < 10; i++) {
+    state.particles.push({
+      x, y,
+      vx: (Math.random() - .5) * 6,
+      vy: (Math.random() - .5) * 6,
+      life: 1,
+      color,
+    });
+  }
+}
+
+function addFloatingText(x, y, text, color) {
+  state.floatingTexts.push({ x, y, text, color, life: 1 });
+}
+
+// ── Drawing ─────────────────────────────────────────────────
+function drawRoad() {
+  ctx.fillStyle = '#6b6b6b';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#555';
+  ctx.fillRect(0, 0, 6, H);
+  ctx.fillRect(W - 6, 0, 6, H);
+
+  const dashLen = 36, gapLen = 32, totalDash = dashLen + gapLen;
+  const offset = (state.frameCount * state.speed * 0.8) % totalDash;
+  ctx.fillStyle = 'rgba(255,255,255,.45)';
+  for (let i = 1; i < 3; i++) {
+    const x = LANE_W * i - 1.5;
+    for (let y = -totalDash + offset; y < H; y += totalDash) {
+      ctx.fillRect(x, y, 3, dashLen);
+    }
+  }
+}
+
+function drawCar() {
+  const car = state.car;
+  ctx.save();
+  ctx.translate(car.x, car.y);
+  if (car.invincible > 0 && Math.floor(car.invincible / 5) % 2 === 0) {
+    ctx.globalAlpha = .35;
+  }
+
+  // ── Top-down car (bird's eye view, facing up) ──
+  const cw = 30;  // half-width
+  const ch = 42;  // half-height
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,.18)';
+  ctx.beginPath();
+  ctx.roundRect(-cw + 3, -ch + 3, cw * 2, ch * 2, 8);
+  ctx.fill();
+
+  // Body
+  ctx.fillStyle = '#e24b4a';
+  ctx.beginPath();
+  ctx.roundRect(-cw, -ch, cw * 2, ch * 2, 8);
+  ctx.fill();
+
+  // Hood (front, top of the car going up) — darker
+  ctx.fillStyle = '#c93a39';
+  ctx.beginPath();
+  ctx.roundRect(-cw + 4, -ch, cw * 2 - 8, ch * 0.5, [6, 6, 0, 0]);
+  ctx.fill();
+
+  // Windshield (between hood and roof)
+  ctx.fillStyle = '#87CEEB';
+  ctx.globalAlpha = (ctx.globalAlpha || 1) * 0.85;
+  ctx.beginPath();
+  ctx.roundRect(-cw + 6, -ch + 22, cw * 2 - 12, 14, 3);
+  ctx.fill();
+  ctx.globalAlpha = car.invincible > 0 && Math.floor(car.invincible / 5) % 2 === 0 ? .35 : 1;
+
+  // Roof (center, slightly lighter)
+  ctx.fillStyle = '#f25554';
+  ctx.beginPath();
+  ctx.roundRect(-cw + 7, -ch + 38, cw * 2 - 14, 22, 3);
+  ctx.fill();
+
+  // Rear window
+  ctx.fillStyle = '#87CEEB';
+  ctx.globalAlpha = (ctx.globalAlpha || 1) * 0.7;
+  ctx.beginPath();
+  ctx.roundRect(-cw + 8, -ch + 62, cw * 2 - 16, 10, 3);
+  ctx.fill();
+  ctx.globalAlpha = car.invincible > 0 && Math.floor(car.invincible / 5) % 2 === 0 ? .35 : 1;
+
+  // Wheels (4 dark rectangles on the sides)
+  ctx.fillStyle = '#333';
+  // Front-left
+  ctx.fillRect(-cw - 3, -ch + 6, 6, 14);
+  // Front-right
+  ctx.fillRect(cw - 3, -ch + 6, 6, 14);
+  // Rear-left
+  ctx.fillRect(-cw - 3, ch - 20, 6, 14);
+  // Rear-right
+  ctx.fillRect(cw - 3, ch - 20, 6, 14);
+
+  // Headlights (two small yellow dots at front)
+  ctx.fillStyle = '#FFD700';
+  ctx.beginPath();
+  ctx.arc(-cw + 10, -ch + 4, 3, 0, Math.PI * 2);
+  ctx.arc(cw - 10, -ch + 4, 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tail lights (two small red dots at rear)
+  ctx.fillStyle = '#ff3333';
+  ctx.beginPath();
+  ctx.arc(-cw + 10, ch - 4, 3, 0, Math.PI * 2);
+  ctx.arc(cw - 10, ch - 4, 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Shield effect
+  if (car.shield) {
+    ctx.globalAlpha = .55;
+    ctx.strokeStyle = '#85B7EB';
+    ctx.lineWidth   = 3;
+    ctx.beginPath();
+    ctx.arc(0, 0, 48, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawObstacles() {
+  state.obstacles.forEach(o => {
+    if (o.hit) return;
+    ctx.save();
+    ctx.translate(o.x, o.y);
+    ctx.font = '38px serif';
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(o.emoji, 0, 0);
+    ctx.restore();
+  });
+}
+
+function drawParticles() {
+  state.particles.forEach(p => {
+    ctx.save();
+    ctx.globalAlpha = p.life * .85;
+    ctx.fillStyle   = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4 * p.life, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+function drawFloatingTexts() {
+  state.floatingTexts.forEach(ft => {
+    ctx.save();
+    ctx.globalAlpha = ft.life;
+    ctx.font = 'bold 20px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.strokeStyle = 'rgba(0,0,0,.5)';
+    ctx.lineWidth = 3;
+    ctx.strokeText(ft.text, ft.x, ft.y);
+    ctx.fillStyle = ft.color;
+    ctx.fillText(ft.text, ft.x, ft.y);
+    ctx.restore();
+  });
+}
+
+function drawHUD() {
+  ctx.fillStyle = 'rgba(0,0,0,.55)';
+  ctx.fillRect(0, 0, W, 38);
+  ctx.font         = '600 14px -apple-system, sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle    = '#fff';
+  ctx.textAlign    = 'left';
+  ctx.fillText(Math.floor(state.score) + 'm', 12, 19);
+  ctx.textAlign = 'center';
+  ctx.fillText('Nível ' + state.level, W / 2, 19);
+  ctx.textAlign = 'right';
+  const hearts = '❤️'.repeat(state.lives) + '🖤'.repeat(3 - state.lives);
+  ctx.fillText(hearts, W - 10, 19);
+}
+
+// ── Collision ───────────────────────────────────────────────
+function checkCollision(car, o) {
+  return Math.abs(car.x - o.x) < 36 && Math.abs(car.y - o.y) < 40;
+}
+
+// ── Update ──────────────────────────────────────────────────
+function update() {
+  if (!state.running) return;
+  state.frameCount++;
+  state.score += state.speed * .04;
+
+  // Faster level progression: every 100m instead of 200m
+  const newLevel = 1 + Math.floor(state.score / 100);
+  if (newLevel > state.level) {
+    state.level = newLevel;
+    playSound('levelup');
+    addFloatingText(W / 2, H / 2 - 40, 'NÍVEL ' + state.level + '!', '#fff');
+  }
+  state.speed     = Math.min(3.4 + state.level * .5, 12);
+  state.spawnRate = Math.max(28, 78 - state.level * 5);
+
+  // Car movement
+  const tx = LANES[state.car.targetLane];
+  state.car.x += (tx - state.car.x) * .18;
+  if (state.car.invincible > 0) state.car.invincible--;
+  if (state.car.invincible === 0) state.car.shield = false;
+
+  // Spawn
+  if (state.frameCount % state.spawnRate === 0) spawnObstacle();
+
+  // Move obstacles
+  state.obstacles.forEach(o => { o.y += state.speed; });
+
+  // Collisions
+  state.obstacles.forEach(o => {
+    if (o.hit) return;
+    if (!checkCollision(state.car, o)) return;
+    o.hit = true;
+
+    if (o.power) {
+      if (o.emoji === '⭐') {
+        state.score += 60;
+        addParticles(o.x, o.y, '#FAC775');
+        addFloatingText(o.x, o.y, '+60', '#FFD700');
+        playSound('star');
+      } else if (o.emoji === '🛡️') {
+        state.car.invincible = 200;
+        state.car.shield     = true;
+        addParticles(o.x, o.y, '#85B7EB');
+        addFloatingText(o.x, o.y, '🛡️', '#85B7EB');
+        playSound('shield');
+      } else if (o.emoji === '💨') {
+        state.speed = Math.max(3, state.speed * .6);
+        addParticles(o.x, o.y, '#5DCAA5');
+        addFloatingText(o.x, o.y, 'SLOW', '#5DCAA5');
+        playSound('slow');
+      }
+    } else {
+      if (state.car.invincible === 0) {
+        state.lives--;
+        addParticles(o.x, o.y, '#E24B4A');
+        addFloatingText(o.x, o.y, '-1 ❤️', '#E24B4A');
+        playSound('hit');
+        state.car.invincible = 100;
+        if (state.lives <= 0) {
+          state.running = false;
+          endGame();
+        }
+      }
+    }
+  });
+
+  // Remove hit + off-screen
+  state.obstacles = state.obstacles.filter(o => !o.hit && o.y < H + 80);
+
+  // Particles
+  state.particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= .05; });
+  state.particles = state.particles.filter(p => p.life > 0);
+
+  // Floating texts
+  state.floatingTexts.forEach(ft => { ft.y -= 1.5; ft.life -= .025; });
+  state.floatingTexts = state.floatingTexts.filter(ft => ft.life > 0);
+
+  // HUD updated on canvas only
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  drawRoad();
+  drawObstacles();
+  drawParticles();
+  drawFloatingTexts();
+  drawCar();
+  drawHUD();
+}
+
+function gameLoop() {
+  update();
+  render();
+  if (state.running) animId = requestAnimationFrame(gameLoop);
+}
+
+function startGame() {
+  ensureAudio();
+  if (animId) cancelAnimationFrame(animId);
+  state = initState();
+  showScreen('game-area');
+  gameLoop();
+}
+
+function endGame() {
+  cancelAnimationFrame(animId);
+  playSound('gameover');
+  lastScore = Math.floor(state.score);
+  const tier = getTier(lastScore);
+  $('final-score').textContent = lastScore;
+  $('over-tier').textContent   = tier.label;
+  showScreen('game-over-screen');
+}
+
+// ── Input: keyboard ─────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (!state || !state.running) return;
+  if (e.key === 'ArrowLeft'  || e.key === 'a') state.car.targetLane = Math.max(0, state.car.targetLane - 1);
+  if (e.key === 'ArrowRight' || e.key === 'd') state.car.targetLane = Math.min(2, state.car.targetLane + 1);
+});
+
+// ── Input: touch / swipe ────────────────────────────────────
+let touchStartX = null;
+
+canvas.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+  if (touchStartX === null || !state || !state.running) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 18) {
+    if (dx < 0) state.car.targetLane = Math.max(0, state.car.targetLane - 1);
+    else         state.car.targetLane = Math.min(2, state.car.targetLane + 1);
+  } else {
+    const rect = canvas.getBoundingClientRect();
+    const tapX = e.changedTouches[0].clientX - rect.left;
+    if (tapX < rect.width / 2) state.car.targetLane = Math.max(0, state.car.targetLane - 1);
+    else                        state.car.targetLane = Math.min(2, state.car.targetLane + 1);
+  }
+  touchStartX = null;
+  e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener('click', e => {
+  if (!state || !state.running) return;
+  const rect = canvas.getBoundingClientRect();
+  const x    = e.clientX - rect.left;
+  if (x < rect.width / 2) state.car.targetLane = Math.max(0, state.car.targetLane - 1);
+  else                      state.car.targetLane = Math.min(2, state.car.targetLane + 1);
+});
+
+// ── Navigation buttons ──────────────────────────────────────
+$('btn-start').addEventListener('click',         () => startGame());
+$('btn-retry').addEventListener('click',         () => startGame());
+$('btn-play-again').addEventListener('click',    () => startGame());
+$('btn-challenge-play').addEventListener('click',() => startGame());
+
+$('btn-lead').addEventListener('click', () => {
+  showScreen('lead-screen');
+  $('input-name').value   = '';
+  $('input-phone').value  = '';
+  $('input-bairro').value = '';
+  $('form-error').textContent = '';
+});
+
+// ── Phone mask ──────────────────────────────────────────────
+$('input-phone').addEventListener('input', function () {
+  let v = this.value.replace(/\D/g, '');
+  if (v.length > 2)  v = '(' + v.slice(0, 2) + ') ' + v.slice(2);
+  if (v.length > 10) v = v.slice(0, 10) + '-' + v.slice(10, 14);
+  this.value = v.slice(0, 15);
+});
+
+// ── Form submit ─────────────────────────────────────────────
+function validatePhone(p) {
+  return p.replace(/\D/g, '').length >= 10;
+}
+
+$('btn-submit').addEventListener('click', async () => {
+  const name   = $('input-name').value.trim();
+  const phone  = $('input-phone').value.trim();
+  const bairro = $('input-bairro').value.trim();
+  $('form-error').textContent = '';
+
+  if (!name)                  { $('form-error').textContent = 'Informe seu nome.';                    return; }
+  if (!validatePhone(phone))  { $('form-error').textContent = 'Número de WhatsApp inválido.';         return; }
+  if (!bairro)                { $('form-error').textContent = 'Informe seu bairro e município.';      return; }
+
+  const score   = lastScore;
+  const tier    = getTier(score);
+  const payload = {
+    name,
+    phone:  phone.replace(/\D/g, ''),
+    bairro,
+    score,
+    tier:   tier.label,
+    source: 'game',
+    ts:     new Date().toISOString(),
+  };
+
+  // ── Send lead to n8n ────────────────────────────────────
+  // if (CONFIG.webhookUrl) {
+  //   try {
+  //     await fetch(CONFIG.webhookUrl, {
+  //       method:  'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body:    JSON.stringify(payload),
+  //     });
+  //   } catch (err) {
+  //     console.warn('Webhook error:', err);
+  //   }
+  // }
+
+  console.log('Lead capturado:', payload);
+
+  $('thanks-score').textContent = score;
+  $('thanks-tier').textContent  = tier.label;
+  showScreen('thanks-screen');
+});
+
+// ── Share with challenge link ───────────────────────────────
+$('btn-share').addEventListener('click', () => {
+  const score = lastScore;
+  const tier  = getTier(score);
+  const shareUrl = CONFIG.baseUrl + '?s=' + score;
+  const text = `Fiz ${score}m desviando da burocracia! (${tier.label})\nConsegue superar? Jogue agora:\n${shareUrl}`;
+
+  if (navigator.share) {
+    navigator.share({ text, url: shareUrl }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => alert('Link copiado! Cole onde quiser.'));
+  } else {
+    prompt('Copie e compartilhe:', text);
+  }
+});
+</script>
+
+</body>
+</html>
