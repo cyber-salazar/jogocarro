@@ -960,14 +960,18 @@ $('btn-share').addEventListener('click', () => {
   const score = lastScore;
   const tier  = getTier(score);
   const shareUrl = CONFIG.baseUrl + '?s=' + score;
-  const text = `Fiz ${score}m desviando da burocracia! (${tier.label})\nConsegue superar? Jogue agora:\n${shareUrl}`;
+
+  // Texto sem URL — o campo url do navigator.share já inclui o link
+  const textMobile  = `Fiz ${score}m desviando da burocracia! (${tier.label})\nConsegue superar? Jogue agora:`;
+  // Texto completo para copiar (clipboard / fallback)
+  const textDesktop = `${textMobile}\n${shareUrl}`;
 
   if (navigator.share) {
-    navigator.share({ text, url: shareUrl }).catch(() => {});
+    navigator.share({ title: 'Desvie da Burocracia!', text: textMobile, url: shareUrl }).catch(() => {});
   } else if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => alert('Link copiado! Cole onde quiser.'));
+    navigator.clipboard.writeText(textDesktop).then(() => alert('Link copiado! Cole onde quiser.'));
   } else {
-    prompt('Copie e compartilhe:', text);
+    prompt('Copie e compartilhe:', textDesktop);
   }
 });
 </script>
