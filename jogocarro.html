@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Desvie da Burocracia! — A Região de Americana Merece Mais</title>
+<title>Desvie da Burocracia! — Hackeando a Burocracia</title>
 
 <!-- Open Graph — miniatura no WhatsApp e redes sociais -->
 <meta property="og:title" content="🚗 Desvie da Burocracia! Você foi desafiado!">
-<meta property="og:description" content="Consegue ir mais longe que eu? Jogue agora e apoie o movimento cívico da região de Americana.">
+<meta property="og:description" content="Consegue ir mais longe? Jogue agora e apoie o movimento Hackeando a Burocracia!">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://cyber-salazar.github.io/jogocarro/jogocarro">
 <meta property="og:image" content="https://cyber-salazar.github.io/jogocarro/preview.png">
@@ -16,7 +16,7 @@
 <meta property="og:locale" content="pt_BR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="🚗 Desvie da Burocracia!">
-<meta name="twitter:description" content="Consegue ir mais longe? Apoie o movimento cívico da região de Americana.">
+<meta name="twitter:description" content="Consegue ir mais longe? Apoie o movimento Hackeando a Burocracia!">
 <meta name="twitter:image" content="https://cyber-salazar.github.io/jogocarro/preview.png">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -266,7 +266,7 @@
   <!-- CHALLENGE SCREEN (when arriving via shared link) -->
   <div id="challenge-screen" style="display:none">
     <div class="screen-card" style="text-align:center">
-      <div class="tag">A Região de Americana Merece Mais</div>
+      <div class="tag">Hackeando a Burocracia</div>
       <div style="font-size:44px;margin:.5rem 0">🏆</div>
       <h2>Você foi desafiado!</h2>
       <p style="margin-bottom:.5rem">Alguém fez</p>
@@ -280,10 +280,10 @@
   <!-- TITLE SCREEN -->
   <div id="title-screen">
     <div class="screen-card" style="text-align:center">
-      <div class="tag">A Região de Americana Merece Mais</div>
+      <div class="tag">Hackeando a Burocracia</div>
       <div style="font-size:52px;margin:.5rem 0">🚗</div>
       <h1>Desvie da Burocracia!</h1>
-      <p>Quanto mais longe você for, maior seu apoio ao movimento cívico da região de Americana.</p>
+      <p>Quanto mais longe você for, maior seu apoio ao movimento.</p>
       <div class="how-to">
         <div class="how-item"><span>⛔</span>Desvie dos<br>obstáculos</div>
         <div class="how-item"><span>⭐</span>Colete<br>power-ups</div>
@@ -324,8 +324,8 @@
       <input type="text" id="input-name" placeholder="Seu primeiro nome" maxlength="40" autocomplete="given-name">
       <label for="input-phone">WhatsApp</label>
       <input type="tel" id="input-phone" placeholder="(19) 99999-9999" maxlength="15" autocomplete="tel">
-      <label for="input-bairro">Bairro e Município</label>
-      <input type="text" id="input-bairro" placeholder="Informe seu bairro e município" maxlength="80" autocomplete="address-level3">
+      <label for="input-bairro">Município</label>
+      <input type="text" id="input-bairro" placeholder="Seu município" maxlength="80" autocomplete="address-level3">
       <div class="error-msg" id="form-error"></div>
       <button class="btn-primary" id="btn-submit" style="margin-top:.75rem">Salvar meu recorde 📲</button>
       <p class="fine-print">Ao cadastrar, você concorda em receber mensagens do movimento pelo WhatsApp.<br>Responda SAIR a qualquer momento para parar.</p>
@@ -351,7 +351,7 @@
 
 <script>
 // ════════════════════════════════════════════════════════════
-//  AMERICANA MERECE MAIS — JOGO DE CAPTAÇÃO DE LEADS v5
+//  HACKEANDO A BUROCRACIA — JOGO DE CAPTAÇÃO DE LEADS
 // ════════════════════════════════════════════════════════════
 
 const CONFIG = {
@@ -494,6 +494,8 @@ function playSound(type) {
     }
   } catch (e) {}
 }
+
+// ── Background Music ────────────────────────────────────────
 
 // ── Canvas / Constants ──────────────────────────────────────
 const canvas = $('game-canvas');
@@ -921,7 +923,7 @@ $('btn-submit').addEventListener('click', async () => {
 
   if (!name)                  { $('form-error').textContent = 'Informe seu nome.';                    return; }
   if (!validatePhone(phone))  { $('form-error').textContent = 'Número de WhatsApp inválido.';         return; }
-  if (!bairro)                { $('form-error').textContent = 'Informe seu bairro e município.';      return; }
+  if (!bairro)                { $('form-error').textContent = 'Informe seu município.';      return; }
 
   const score   = lastScore;
   const tier    = getTier(score);
@@ -960,7 +962,7 @@ $('btn-share').addEventListener('click', () => {
   const score = lastScore;
   const tier  = getTier(score);
   const shareUrl = CONFIG.baseUrl + '?s=' + score;
-  const text = `🚗 Fiz ${score}m desviando da burocracia! (${tier.label})\nConsegue superar? Apoie o movimento cívico da região de Americana:\n${shareUrl}`;
+  const text = `🚗 Fiz ${score}m desviando da burocracia! (${tier.label})\nConsegue superar? Apoie o movimento Hackeando a Burocracia:\n${shareUrl}`;
 
   if (navigator.share) {
     // Passa só text — sem campo url separado para evitar duplicação no WhatsApp
